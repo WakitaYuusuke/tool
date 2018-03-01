@@ -25,10 +25,12 @@ public class Main {
         registerMembers(memberList);
         registerTasks(taskList);
 
-        for (int it = 0; it < 5; it++) {
+        while (true) {
 
             decideDuty(memberList, taskList);
 
+            LogOutPut.writeLog(memberList);
+            
             for (int i = 0; i < taskList.size(); i++) {
                 String task = taskList.get(i).name;
                 String name = taskList.get(i).currentPerson;
@@ -42,11 +44,7 @@ public class Main {
     }
 
     static public void registerMembers(ArrayList<Member> memberList) {
-//		int additionalNum = 0;
-//		for(int i = 0; i < additionalNum; i ++) {
-//			String name = "";
-//			memberList.add(new Member(name));
-//		}
+//        memberList.add(new Member("dev"));
         memberList.add(new Member("kosugi"));
         memberList.add(new Member("tomizawa"));
         memberList.add(new Member("nagahama"));
@@ -59,19 +57,29 @@ public class Main {
     static public void decideDuty(ArrayList<Member> memberList, ArrayList<Task> taskList) {
         Task selectedTask;
 
-//        二周目ではnumOfDecidedTaskが4かっら始まるのでfalse
         int counter = 0;
+
         while (counter != taskList.size()) {
             int rnd = new Random().nextInt(memberList.size());
+//            Member selectedMember = memberList.get(0);
             Member selectedMember = memberList.get(rnd);
-            if (!selectedMember.selectFlg) {
+            
+            LogOutPut.writeLog(selectedMember);
+            
+            if (!selectedMember.selectFlg && !selectedMember.isThisLoop) {
                 selectedTask = decideTask(selectedMember, taskList);
                 clearExperience(memberList, selectedTask);
                 selectedMember.selectFlg = true;
-                counter ++;
+                selectedMember.isThisLoop = true;
+                counter++;
                 Member.numOfDecidedTask++;
                 clearSelectFlg(memberList);
+                
+                LogOutPut.writeLog(selectedTask.name);
             }
+        }
+        for(int i = 0; i < memberList.size(); i ++){
+            memberList.get(i).isThisLoop = false;
         }
     }
 
@@ -84,7 +92,7 @@ public class Main {
         }
 
         for (int i = 0; i < taskList.size(); i++) {
-            taskList.get(i).chengePerspnInfo();
+            taskList.get(i).chengePersonInfo();
         }
     }
 
@@ -94,10 +102,10 @@ public class Main {
 //			String name = "";
 //			taskList.add(new Task(name));
 //		}
-        taskList.add(new Task("toire"));
-        taskList.add(new Task("gomidasi"));
-        taskList.add(new Task("yuka"));
-        taskList.add(new Task("yuubinnkaisyuu"));
+        taskList.add(new Task("トイレ"));
+        taskList.add(new Task("ゴミ出し"));
+        taskList.add(new Task("床"));
+        taskList.add(new Task("郵便"));
     }
 
     static public Task decideTask(Member selectedMember, ArrayList<Task> taskList) {
@@ -106,7 +114,7 @@ public class Main {
             int rnd = new Random().nextInt(taskList.size());
             selectedTask = taskList.get(rnd);
 
-            if (selectedMember.checkExperiencedTasks(selectedTask.name) && selectedTask.checkExperiencedMember(selectedMember.name)) {
+            if (selectedMember.isExperiencedTasks(selectedTask.name) && selectedTask.isExperiencedMember(selectedMember.name)) {
                 selectedMember.ecsperiencedTasks.add(selectedTask.name);
                 selectedTask.currentPerson = selectedMember.name;
                 selectedTask.count++;
@@ -125,10 +133,10 @@ public class Main {
         }
 
     }
-    
-    static public void clearSelectFlg(ArrayList<Member> memberList){
-        if(Member.numOfDecidedTask == memberList.size()){
-            for(int i = 0; i < memberList.size(); i ++){
+
+    static public void clearSelectFlg(ArrayList<Member> memberList) {
+        if (Member.numOfDecidedTask == memberList.size()) {
+            for (int i = 0; i < memberList.size(); i++) {
                 memberList.get(i).selectFlg = false;
             }
             Member.numOfDecidedTask = 0;

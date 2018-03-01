@@ -22,7 +22,7 @@ public class Task {
         numOfTask++;
     }
 
-    boolean checkExperiencedMember(String memberName) {
+    boolean isExperiencedMember(String memberName) {
         boolean check = false;
         if (currentPerson.isEmpty() && !lastPerson.equals(memberName)) {
             check = true;
@@ -30,7 +30,7 @@ public class Task {
         return check;
     }
 
-    void chengePerspnInfo() {
+    void chengePersonInfo() {
         lastPerson = currentPerson;
         currentPerson = "";
     }
