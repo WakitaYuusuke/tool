@@ -36,6 +36,7 @@ public class Member {
         }
     }
 
+//    引数のTaskを経験してるか確認
     boolean isExperiencedTasks(String task) {
         boolean check = false;
 
@@ -57,4 +58,33 @@ public class Member {
         return check;
     }
 
+//    再振り分けする状態のMemberか確認
+    boolean isStateToReselect(ArrayList<Task> taskList){
+        boolean check = false;
+        ArrayList<String> selectedTaskList = new ArrayList<>();
+        int count = 0;
+        
+//        選択済みTaskのArrayList作成
+        for(int i = 0; i < taskList.size(); i ++){
+            if(taskList.get(i).currentPerson.isEmpty()){
+                selectedTaskList.add(taskList.get(i).name);
+            }
+        }
+        
+//        selectedTaskListとecsperiencedTasksに格納していないTaskがすべて一致すると
+//        振り分けることができないので判定する処理
+        for(int i = 0; i < selectedTaskList.size(); i ++){
+            for(int j = 0; j < ecsperiencedTasks.size(); i ++){
+                if(selectedTaskList.get(i).equals(ecsperiencedTasks.get(j))){
+                    count ++;
+                }
+            }
+        }
+        
+        if(count == 0){
+            check = true;
+        }
+        
+        return check;
+    }
 }

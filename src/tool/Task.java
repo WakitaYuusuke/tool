@@ -10,8 +10,7 @@ package tool;
  * @author Yusuke
  */
 public class Task {
-
-    static int numOfTask;
+    
     int count;
     String name = "";
     String currentPerson = "";
@@ -19,9 +18,9 @@ public class Task {
 
     Task(String name) {
         this.name = name;
-        numOfTask++;
     }
 
+//    前回の担当者と重複しないか確認
     boolean isExperiencedMember(String memberName) {
         boolean check = false;
         if (currentPerson.isEmpty() && !lastPerson.equals(memberName)) {
@@ -30,6 +29,7 @@ public class Task {
         return check;
     }
 
+//    currentPersonをlastPersonへ移動後currentPerson初期化
     void chengePersonInfo() {
         lastPerson = currentPerson;
         currentPerson = "";
