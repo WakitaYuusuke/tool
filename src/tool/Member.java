@@ -14,7 +14,7 @@ import java.util.ArrayList;
 public class Member {
 
     static int numOfMember = 0;
-    static int numOfDecidedTask = 0;
+    static int numOfDecidedMember = 0;
     String name;
     String currentTask;
     boolean selectFlg = false;
