@@ -11,9 +11,8 @@ import java.util.ArrayList;
  *
  * @author Yusuke
  */
-public class Member {
+public class Member implements Cloneable {
 
-    static int numOfMember = 0;
     static int numOfDecidedMember = 0;
     String name;
     String currentTask;
@@ -25,15 +24,24 @@ public class Member {
         if (name == "dev") {
             this.name = "dev";
 //                selectFlg  = true;
-                isThisLoop = true;
+            isThisLoop = true;
             ecsperiencedTasks.add("toire");
             ecsperiencedTasks.add("gomidasi");
             ecsperiencedTasks.add("yuubinnkaisyuu");
             ecsperiencedTasks.add("yuka");
         } else {
             this.name = name;
-            numOfMember++;
         }
+    }
+
+    @Override
+    public Member clone() {
+        Member result            = new Member(this.name);
+        result.currentTask       = this.currentTask;
+        result.selectFlg         = this.selectFlg;
+        result.isThisLoop        = this.isThisLoop;
+        result.ecsperiencedTasks = new ArrayList<String>(this.ecsperiencedTasks);
+        return result;
     }
 
 //    引数のTaskを経験してるか確認
@@ -43,14 +51,16 @@ public class Member {
 //        スタート時の空のListを拾う処理
         if (ecsperiencedTasks.isEmpty()) {
             check = true;
-        }
+        } 
+
 //        担当してないタスクか確認する処理
         else {
             for (int i = 0; i < ecsperiencedTasks.size(); i++) {
                 if (ecsperiencedTasks.get(i).equals(task)) {
                     check = false;
                     break;
-                } else {
+                }
+                else {
                     check = true;
                 }
             }
@@ -59,32 +69,29 @@ public class Member {
     }
 
 //    再振り分けする状態のMemberか確認
-    boolean isStateToReselect(ArrayList<Task> taskList){
+    boolean isStateToReselect(ArrayList<Task> taskList) {
         boolean check = false;
-        ArrayList<String> selectedTaskList = new ArrayList<>();
-        int count = 0;
+        ArrayList<String> notSelectedTaskList = new ArrayList<>();
         
 //        選択済みTaskのArrayList作成
-        for(int i = 0; i < taskList.size(); i ++){
-            if(taskList.get(i).currentPerson.isEmpty()){
-                selectedTaskList.add(taskList.get(i).name);
+        for (int i = 0; i < taskList.size(); i++) {
+            if (taskList.get(i).currentPerson.isEmpty()) {
+                notSelectedTaskList.add(taskList.get(i).name);
             }
         }
-        
+
 //        selectedTaskListとecsperiencedTasksに格納していないTaskがすべて一致すると
 //        振り分けることができないので判定する処理
-        for(int i = 0; i < selectedTaskList.size(); i ++){
-            for(int j = 0; j < ecsperiencedTasks.size(); i ++){
-                if(selectedTaskList.get(i).equals(ecsperiencedTasks.get(j))){
-                    count ++;
+        int count = 0;
+        for (int i = 0; i < notSelectedTaskList.size(); i++) {
+            for (int j = 0; j < ecsperiencedTasks.size(); j++) {
+                if (notSelectedTaskList.get(i).equals(ecsperiencedTasks.get(j))) {
+                   count ++;
                 }
             }
         }
-        
-        if(count == 0){
-            check = true;
-        }
-        
+        if(notSelectedTaskList.size() == count && notSelectedTaskList.size() != 0){check = true;}
+
         return check;
     }
 }

@@ -15,6 +15,8 @@ import java.util.Random;
  */
 public class Main {
 
+    
+    static int count = 0;
     static ArrayList<Member> memberList = new ArrayList<>();
     static ArrayList<Member> selectedMemberList = new ArrayList<>();
     static ArrayList<Task> taskList = new ArrayList<>();
@@ -26,36 +28,62 @@ public class Main {
         // TODO code application logic here
         registerMembers();
         registerTasks();
+        int devCounter = 0;
 
         while (true) {
-//            boolean reselectFlg = false;
+            
 //            主な振り分け処理、組み合わせによっては止まるので再振り分けの処理も行う
-//            do{reselectFlg = decideDuty();}
-//            while(reselectFlg);
+//            decideMemberで選ばれたMemberをselectedMemberListで管理
             decideMember();
+            ArrayList<Member> tmpSelectedMemberList = null;
 
-            for (int i = 0; i < taskList.size(); i++) {
-                Member selectedMember = selectedMemberList.get(i);
-                decideTask(selectedMember);
-            }
-
+            boolean reselectFlg = false;
+            do {
+                if(reselectFlg){
+                    LogOutPut.writeLog("振り直し");
+                    for(int i = 0; i < taskList.size(); i ++){
+                        if(!taskList.get(i).currentPerson.isEmpty()){
+                            taskList.get(i).currentPerson = "";
+                            taskList.get(i).count --;
+                        }
+                    }
+                }
+                
+//                selectedMemberListをディープコピー
+                tmpSelectedMemberList = cloneMemberList();
+                for (int i = 0; i < taskList.size(); i++) {
+                    Member selectedMember = tmpSelectedMemberList.get(i);
+                    
+//            selectedMemberにどのTaskも振れない場合
+                    if (!selectedMember.ecsperiencedTasks.isEmpty()) {
+                        reselectFlg = selectedMember.isStateToReselect(taskList);
+                        if(reselectFlg){break;}
+                    }
+                    decideTask(selectedMember);
+                }
+            } 
+            while (reselectFlg);
+            
+//            tmpSelectedMemberListをMemberListと同期
+            uploadMemberList(tmpSelectedMemberList);
             selectedMemberList.clear();
-
-            for(int i = 0; i < taskList.size(); i ++){
-                Task task  = taskList.get(i);
+            
+            for (int i = 0; i < taskList.size(); i++) {
+                Task task = taskList.get(i);
                 clearExperience(task);
             }
-            
-            LogOutPut.writeLog(memberList);
 
 //            結果出力
+            String Output = "";
             for (int i = 0; i < taskList.size(); i++) {
                 String task = taskList.get(i).name;
                 String name = taskList.get(i).currentPerson;
                 System.out.println(task + ":" + name);
             }
-
             System.out.println("------------------------");
+            
+            devCounter ++;
+            LogOutPut.writeLog(taskList ,devCounter);
 
 //            次の繰り返しのためのmemberとtaskの変数整理
             setInfo();
@@ -79,10 +107,8 @@ public class Main {
         taskList.add(new Task("床"));
         taskList.add(new Task("郵便"));
     }
-    
-    static public boolean decideMember() {
-        boolean reselectFlg = false;
 
+    static public void decideMember() {
         while (selectedMemberList.size() != taskList.size()) {
 //            memberList格納数未満の乱数
             int rnd = new Random().nextInt(memberList.size());
@@ -90,11 +116,6 @@ public class Main {
 //            dev選択
 //            Member selectedMember = memberList.get(0);
 
-//            selectedMemberにどのTaskも振れない場合
-//            reselectFlg = selectedMember.isStateToReselect(taskList);
-//            resetInfoToReselect();
-//            if(reselectFlg){break;}
-            LogOutPut.writeLog(selectedMember);
 //            MemberListの中で未選択かつ今回の担当にも選ばれていない場合
             if (!selectedMember.selectFlg && !selectedMember.isThisLoop) {
                 selectedMemberList.add(selectedMember);
@@ -102,24 +123,24 @@ public class Main {
                 selectedMember.selectFlg = true;
                 selectedMember.isThisLoop = true;
                 clearSelectFlg();
-//                LogOutPut.writeLog(selectedTask.name);
             }
         }
 
 //        isThisLoop初期化
-        for (int i = 0; i < memberList.size(); i++) {
-            memberList.get(i).isThisLoop = false;
+        for (int i = 0; i < selectedMemberList.size(); i++) {
+            selectedMemberList.get(i).isThisLoop = false;
         }
-        return reselectFlg;
     }
-//    selectedMemberに仕事を割り振る
 
+//    selectedMemberに仕事を割り振る
     static public void decideTask(Member selectedMember) {
         Task selectedTask;
         while (true) {
             int rnd = new Random().nextInt(taskList.size());
             selectedTask = taskList.get(rnd);
 
+            LogOutPut.writeLog(taskList);
+            LogOutPut.writeLog(selectedMember);
 //            selectedMemberが未経験かつ前回未担当
             if (selectedMember.isExperiencedTasks(selectedTask.name) && selectedTask.isExperiencedMember(selectedMember.name)) {
                 selectedMember.ecsperiencedTasks.add(selectedTask.name);
@@ -128,6 +149,7 @@ public class Main {
                 break;
             }
         }
+        LogOutPut.writeLog(selectedMember.name + "　get " + selectedTask.name);
     }
 
 //    1つのTaskに対して全Memberが経験を持つ場合、ecsperiencedTasksから該当Task消去
@@ -138,6 +160,7 @@ public class Main {
                 member.ecsperiencedTasks.remove(task.name);
 
             }
+            LogOutPut.writeLog(task.name + "の経験クリア");
         }
 
     }
@@ -149,19 +172,8 @@ public class Main {
                 memberList.get(i).selectFlg = false;
             }
             Member.numOfDecidedMember = 0;
-        }
-    }
-
-//    再選択する際にループ途中で加えられた変数をループ前にリセット
-//    まだ実装途中です
-    static public void resetInfoToReselect() {
-        for (int i = 0; i < memberList.size(); i++) {
-            Member member = memberList.get(i);
-            if (member.isThisLoop) {
-                member.selectFlg = false;
-                member.currentTask = "";
-                member.ecsperiencedTasks.remove(member.ecsperiencedTasks.size() - 1);
-            }
+            count ++;
+            LogOutPut.writeLog("セレクトフラグクリア");
         }
     }
 
@@ -176,6 +188,26 @@ public class Main {
 
         for (int i = 0; i < taskList.size(); i++) {
             taskList.get(i).chengePersonInfo();
+        }
+    }
+
+    static public ArrayList<Member> cloneMemberList() {
+        ArrayList<Member> clone = new ArrayList<>();
+        for (int i = 0; i < selectedMemberList.size(); i++) {
+            clone.add(selectedMemberList.get(i).clone());
+        }
+        return clone;
+    }
+    
+    static public void uploadMemberList(ArrayList<Member> clone){
+        for(int i = 0; i < memberList.size(); i ++){
+            for(int j = 0; j < clone.size(); j ++){
+                if(memberList.get(i).name.equals(clone.get(j).name)){
+                    memberList.remove(i);
+                    memberList.add(i, clone.get(j));
+                    break;
+                }
+            }
         }
     }
 
